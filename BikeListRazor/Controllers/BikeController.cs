@@ -1,5 +1,6 @@
 ﻿using BikeListRazor.Model;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,9 +19,22 @@ namespace BikeListRazor.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetAll()
+        public async Task<IActionResult> GetAll()
         {
-            return Json(new { data = _db.Bike.ToList() });
+            return Json(new { data = await _db.Bike.ToListAsync() });
+        }
+
+        [HttpDelete]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var bikeFromDb = await _db.Bike.FirstOrDefaultAsync(u => u.Id == id);
+            if (bikeFromDb == null)
+            {
+                return Json(new { success = false, message = "Error while Deleting" });
+            }
+            _db.Bike.Remove(bikeFromDb);
+            await _db.SaveChangesAsync();
+            return Json(new { success = true, message = "Delete successful" });
         }
     }
 }
